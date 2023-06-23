@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-
 	"askvart.com/goals/views"
 	"github.com/julienschmidt/httprouter"
 )

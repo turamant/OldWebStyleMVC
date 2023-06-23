@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	//"github.com/gorilla/mux"
@@ -28,19 +29,21 @@ func main() {
 	//r.HandleFunc("/faq", faq)
 	//http.ListenAndServe(":3000", r)
 
-	//homeView = views.NewView("bootstrap", "views/home.gohtml")
-	//contactView = views.NewView("bootstrap", "views/contact.gohtml")
+	
 	  
 	usersC := controllers.NewUsers()
 	staticC := controllers.NewStatic()
+	fmt.Printf("%T...%v",usersC, usersC)
 
 	router := httprouter.New()
-	router.NotFound = http.FileServer(http.Dir("/static/"))
+		
 	router.GET("/", staticC.Home.ServeHTTP)
 	router.GET("/contact", staticC.Contact.ServeHTTP)
 	router.GET("/faq", staticC.Faq.ServeHTTP)
 	router.GET("/about", staticC.About.ServeHTTP)
+
 	router.GET("/signup", usersC.New) 
 	router.POST("/signup", usersC.Create)
+
 	http.ListenAndServe(":3000", router)
 }
