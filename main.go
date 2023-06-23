@@ -64,6 +64,7 @@ func main() {
 	router.GET("/contact", contact)
 	router.GET("/faq", faq)
 	router.GET("/about", about)
-	router.GET("/signup", usersC.New) //
+	router.GET("/signup", usersC.New) 
+	router.POST("/signup", usersC.Create)
 	http.ListenAndServe(":3000", router)
 }
