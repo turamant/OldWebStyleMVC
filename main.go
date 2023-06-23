@@ -1,25 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
-	//"github.com/gorilla/mux"
+	"net/http"	
 	"askvart.com/goals/controllers"
 	"github.com/julienschmidt/httprouter"
+	//"github.com/gorilla/mux"
 )
-
-
-
-
-
-
-
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
 
 func main() {
 	//r := mux.NewRouter()
@@ -28,12 +14,9 @@ func main() {
 	//r.HandleFunc("/contact", contact)
 	//r.HandleFunc("/faq", faq)
 	//http.ListenAndServe(":3000", r)
-
-	
 	  
 	usersC := controllers.NewUsers()
 	staticC := controllers.NewStatic()
-	fmt.Printf("%T...%v",usersC, usersC)
 
 	router := httprouter.New()
 		
