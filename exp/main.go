@@ -15,7 +15,7 @@ const (
 	port     = 5432
 	user     = "spartak"
 	password = "spartak"
-	dbname   = "mygolang1"
+	dbname   = "mygolang1_exp"
 )
 
 type User struct{
