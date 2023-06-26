@@ -2,10 +2,8 @@ package models
 
 import (
 	"errors"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	
 )
 
 var (
@@ -17,6 +15,7 @@ var (
 type User struct {
 	gorm.Model
 	Name string
+	Age uint
 	Email string `gorm:"not null;unique_index"`
 }
 
@@ -39,7 +38,7 @@ func (us *UserService) Close() error{
 	return us.db.Close()
 }
 
-func (us *UserService) ByID(id uint) (*User, error){
+func (us *UserService) ByID(id int) (*User, error){
 	var user User
 	db := us.db.Where("id=?",id)
 	err := first(db, &user)
@@ -48,6 +47,36 @@ func (us *UserService) ByID(id uint) (*User, error){
 	}
 	return &user, nil
 }
+
+func (us *UserService) ByAge(age uint) (*User, error){
+	var user User
+	db := us.db.Where("age=?",age)
+	err := first(db, &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func(us *UserService) InAgeRange(minAge, maxAge uint) ([]User, error){
+	var users []User
+	db := us.db.Where("age <=? AND age >= ?", maxAge, minAge)
+	err := find(db, &users)
+	if err != nil{
+		return nil, err
+	}
+	return users, err
+}
+func (us *UserService) ListUsers() ([]User, error){
+	var users []User
+	err := find(us.db, &users)
+	if err != nil{
+		return nil, err
+	}
+	return users, err
+
+}
+
 
 func (us *UserService) ByEmail(email string) (*User, error) {
 	var user User
@@ -89,6 +118,14 @@ func (us *UserService) Create(user *User) error{
 
 func first(db *gorm.DB, dst interface{}) error{
 	err := db.First(dst).Error
+	if err == gorm.ErrRecordNotFound {
+		return ErrNotFound
+	}
+	return err
+}
+
+func find(db *gorm.DB, dst interface{}) error{
+	err := db.Find(dst).Error
 	if err == gorm.ErrRecordNotFound {
 		return ErrNotFound
 	}

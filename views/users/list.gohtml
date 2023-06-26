@@ -1,0 +1,10 @@
+{{define "yield"}}
+
+<h1>All users</h1>
+  
+    {{range $index, $element := . }}
+        <a href='/users/{{.ID}}'><li>{{$element.ID}}:{{ $element.Name }}, {{ $element.Email}}, {{$element.Age}}</li></a>
+    {{end}}
+   
+            
+{{end}}
