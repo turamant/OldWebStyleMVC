@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"askvart.com/goals/rand"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 )
@@ -209,8 +211,10 @@ func getUserIdInfo() (ID string){
 	return ID
 }
 func main(){
-	db := connectDB()
-	defer db.Close()
+	//db := connectDB()
+	//defer db.Close()
+	fmt.Println(rand.String(10))
+    fmt.Println(rand.RememberToken())
 	//insertDB(db, "Petrov", "petrov@mail.ru")
 	//getUser(db, 1)
 	//listUser(db)

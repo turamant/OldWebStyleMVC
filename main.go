@@ -49,7 +49,11 @@ func main() {
 	
 	router.GET("/login", usersC.LoginView.ServeHTTP)
 	router.POST("/login", usersC.Login)
-	//router.GET("/serviceDB", usersD.DestructDB)
+
+	router.GET("/cookietest", usersC.CookieTest)
+
+	router.GET("/droptable", usersC.DropTable)
+	
 
 	http.ListenAndServe(":3000", router)
 }

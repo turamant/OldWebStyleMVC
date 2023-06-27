@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	//"fmt"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -93,12 +93,21 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	http.Redirect(w, r, "/users", http.StatusFound)
 }
 
+func (u *Users) DropTable(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
+	err := u.us.DestructiveReset()
+	if err != nil {
+		http.Error(w, "error drop table", 500)
+	}
+	http.Redirect(w, r, "/users", http.StatusFound)
+}
+
 func (u *Users) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	form := LoginForm{}
 	if err := parseForm(r, &form); err != nil {
 	panic(err)
 	}
-	_, err := u.us.Authenticate(form.Email, form.Password)
+	user, err := u.us.Authenticate(form.Email, form.Password)
+	if err != nil {
 	switch err {
 	case models.ErrNotFound:
 		//fmt.Fprintln(w, "Invalid email address")
@@ -113,6 +122,21 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 		//http.Error(w, err.Error(), http.StatusInternalServerError)
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
-	
-	
+	return
+	}
+	cookie := http.Cookie{
+		Name: "email",
+		Value: user.Email,
+	}
+	http.SetCookie(w, &cookie)
+	fmt.Fprintln(w, user)
+}
+
+func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	cookie, err := r.Cookie("email")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintln(w, "Email is: ", cookie.Value)
 }
