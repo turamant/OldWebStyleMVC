@@ -11,13 +11,15 @@ import (
 )
 
 type Users struct{
-	NewView *views.View
-	us 		*models.UserService
+	NewView 	*views.View
+	ListView 	*views.View
+	UserView    *views.View
+	us 			*models.UserService
 }
 
 type SignupForm struct{
 	Name 	 string `schema:"name"`
-	Age      uint   `schema:"age"`
+	Age     uint   `schema:"age"`
 	Email    string `schema:"email"`
 	Password string `schema:"password"`
 }
@@ -25,20 +27,8 @@ type SignupForm struct{
 func NewUsers(us *models.UserService) *Users{
 	return &Users{
 		NewView: views.NewView("bootstrap", "users/new"),
-		us: us,
-	}
-}
-
-func ListU(us *models.UserService) *Users{
-	return &Users{
-		NewView: views.NewView("bootstrap", "users/list"),
-		us: us,
-	}
-}
-
-func UsId(us *models.UserService) *Users{
-	return &Users{
-		NewView: views.NewView("bootstrap", "users/user"),
+		ListView: views.NewView("bootstrap", "users/list"),
+		UserView:  views.NewView("bootstrap", "users/user"),
 		us: us,
 	}
 }
@@ -51,7 +41,7 @@ func (u *Users) List(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	if err != nil {
 		panic(err)
 	}
-	if err := u.NewView.Render(w, users); err != nil{
+	if err := u.ListView.Render(w, users); err != nil{
 		panic(err)
 	}
 	
@@ -66,7 +56,7 @@ func (u *Users) UserID(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	if err != nil {
 		panic(err)
 	}
-	if err := u.NewView.Render(w, user); err != nil{
+	if err := u.UserView.Render(w, user); err != nil{
 		panic(err)
 	}
 	
@@ -79,6 +69,7 @@ func (u *Users) New(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 		panic(err)
 	}
 }
+
 
 func (u *Users) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
 	var form SignupForm

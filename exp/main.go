@@ -219,14 +219,15 @@ func main(){
 	
 	//createOrders(db)
 	//listUserOrders(db)
-	db.LogMode(true)
-	db.AutoMigrate(&User{}, &Order{})
+	//db.LogMode(true)
+	//db.AutoMigrate(&User{}, &Order{})
 	//createUser(db)
-	user := getUserID(db)
+	//user := getUserID(db)
 	//getUserWhere(db)
 	//listUser(db)
 	//createOrder(db, user, 337, "Volvo 60c")
-	preloadingUserOrders(db, user)
+	//preloadingUserOrders(db, user)
+	
 
 	
 }
