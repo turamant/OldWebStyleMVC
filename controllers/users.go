@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"fmt"
+	//"fmt"
 	"net/http"
 	"strconv"
 
@@ -11,29 +11,34 @@ import (
 )
 
 type Users struct{
-	NewView 	*views.View
+	SignUpView 	*views.View
 	ListView 	*views.View
 	UserView    *views.View
+	LoginView   *views.View
 	us 			*models.UserService
 }
 
 type SignupForm struct{
-	Name 	 string `schema:"name"`
-	Age     uint   `schema:"age"`
-	Email    string `schema:"email"`
-	Password string `schema:"password"`
+	Name 	 	string `schema:"name"`
+	Age     	uint   `schema:"age"`
+	Email    	string `schema:"email"`
+	Password 	string `schema:"password"`
+}
+
+type LoginForm struct {
+	Email 		string `schema:"email"`
+	Password 	string `schema:"password"`
 }
 
 func NewUsers(us *models.UserService) *Users{
 	return &Users{
-		NewView: views.NewView("bootstrap", "users/new"),
+		SignUpView: views.NewView("bootstrap", "users/signup"),
 		ListView: views.NewView("bootstrap", "users/list"),
 		UserView:  views.NewView("bootstrap", "users/user"),
+		LoginView: views.NewView("bootstrap", "users/login"),
 		us: us,
 	}
 }
-
-
 
 
 func (u *Users) List(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
@@ -62,13 +67,12 @@ func (u *Users) UserID(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	
 }
 
-
-
-func (u *Users) New(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
-	if err := u.NewView.Render(w, nil); err != nil{
+func (u *Users) SignUp(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
+	if err := u.SignUpView.Render(w, nil); err != nil{
 		panic(err)
 	}
 }
+
 
 
 func (u *Users) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
@@ -80,10 +84,35 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		Name: 	form.Name,
 		Age:   	form.Age,
 		Email: 	form.Email,
+		Password: form.Password,
 	}
 	if err := u.us.Create(&user); err != nil{
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprint(w, "User is", user)
+	http.Redirect(w, r, "/users", http.StatusFound)
+}
+
+func (u *Users) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	form := LoginForm{}
+	if err := parseForm(r, &form); err != nil {
+	panic(err)
+	}
+	_, err := u.us.Authenticate(form.Email, form.Password)
+	switch err {
+	case models.ErrNotFound:
+		//fmt.Fprintln(w, "Invalid email address")
+		http.Redirect(w, r, "/login", http.StatusFound)
+	case models.ErrInvalidPassword:
+		http.Redirect(w, r, "/login", http.StatusFound)
+		//fmt.Fprintln(w, "Invalid password provided")
+	case nil:
+		//fmt.Fprintln(w, user)
+		http.Redirect(w, r, "/users", http.StatusFound)
+	default:
+		//http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+	
+	
 }

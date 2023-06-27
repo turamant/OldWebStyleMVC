@@ -43,10 +43,12 @@ func main() {
 	router.GET("/about", staticC.About.ServeHTTP)
     router.GET("/users", usersC.List)
 	router.GET("/users/:id", usersC.UserID)
-	router.GET("/signup", usersC.New)
+	
+	router.GET("/signup", usersC.SignUp)
 	router.POST("/signup", usersC.Create)
-	//router.GET("/login", usersC.LoginView)
-	//router.POST("/login", usersC.Login)
+	
+	router.GET("/login", usersC.LoginView.ServeHTTP)
+	router.POST("/login", usersC.Login)
 	//router.GET("/serviceDB", usersD.DestructDB)
 
 	http.ListenAndServe(":3000", router)

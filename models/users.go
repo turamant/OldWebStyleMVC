@@ -10,7 +10,8 @@ import (
 var (
 	ErrNotFound = errors.New("models: resource not found")
 	ErrInvalidID = errors.New("models: ID provided was invalid")
-	userPwPepper = "secret-random-string"
+	ErrInvalidPassword = errors.New("models: incorrect password provided")
+	userPwPepper = "this-is-salt-pepper"
 )
 
 
@@ -128,6 +129,37 @@ func (us *UserService) DestructiveReset() error{
 }
 
 
+//Authenticate может использоваться для аутентификации пользователя с
+// указанным адресом электронной почты и паролем.
+// Если указанный адрес электронной почты недействителен, это вернет
+// nil, ErrNotFound
+// Если предоставленный пароль недействителен, это вернет
+// nil, ErrInvalidPassword
+// Если адрес электронной почты и пароль верны, это вернет
+// пользователя, nil
+// В противном случае, если будет обнаружена другая ошибка, будет возвращено
+// nil, error
+func (us *UserService) Authenticate(email, password string) (*User, error) {
+	foundUser, err := us.ByEmail(email)
+	if err != nil{
+		return nil, err
+	}
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(foundUser.PasswordHash),
+		[]byte(password+userPwPepper))
+	switch err {
+	case nil:
+		return foundUser, nil
+	case bcrypt.ErrMismatchedHashAndPassword:
+		return nil, ErrInvalidPassword
+	default:
+		return nil, err
+	}	
+}
+
+
+
+//----------------------------------------------
 
 func first(db *gorm.DB, dst interface{}) error{
 	err := db.First(dst).Error
