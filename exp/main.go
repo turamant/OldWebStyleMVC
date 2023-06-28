@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"askvart.com/goals/rand"
+	"askvart.com/goals/hash"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
@@ -215,6 +216,8 @@ func main(){
 	//defer db.Close()
 	fmt.Println(rand.String(10))
     fmt.Println(rand.RememberToken())
+	hmac := hash.NewHMAC("my-secret-key")
+	fmt.Println(hmac.Hash("this is my string to hash"))
 	//insertDB(db, "Petrov", "petrov@mail.ru")
 	//getUser(db, 1)
 	//listUser(db)

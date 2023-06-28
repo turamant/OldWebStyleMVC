@@ -6,8 +6,10 @@ import (
 	"strconv"
 
 	"askvart.com/goals/models"
+	"askvart.com/goals/rand"
 	"askvart.com/goals/views"
 	"github.com/julienschmidt/httprouter"
+	
 )
 
 type Users struct{
@@ -49,7 +51,7 @@ func (u *Users) List(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	if err := u.ListView.Render(w, users); err != nil{
 		panic(err)
 	}
-	
+
 }
 func (u *Users) UserID(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
 	s := ps.ByName("id")
@@ -90,16 +92,14 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/users", http.StatusFound)
+	err := u.signIn(w, &user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 
-func (u *Users) DropTable(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
-	err := u.us.DestructiveReset()
-	if err != nil {
-		http.Error(w, "error drop table", 500)
-	}
-	http.Redirect(w, r, "/users", http.StatusFound)
-}
 
 func (u *Users) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	form := LoginForm{}
@@ -124,19 +124,58 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	}
 	return
 	}
-	cookie := http.Cookie{
-		Name: "email",
-		Value: user.Email,
+	err = u.signIn(w, user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	return
 	}
-	http.SetCookie(w, &cookie)
-	fmt.Fprintln(w, user)
+	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 
+
+// signIn используется для входа данного пользователя через файлы cookie
+func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
+	if user.Remember == ""{
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.Remember = token
+		err = u.us.Update(user)
+		if err != nil {
+			return err
+		}
+	}
+	cookie := http.Cookie {
+		Name: "remember_token",
+		Value: user.Remember,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+	return nil
+}
+
+
 func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	cookie, err := r.Cookie("email")
+	cookie, err := r.Cookie("remember_token")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintln(w, "Email is: ", cookie.Value)
+	user, err := u.us.ByRemember(cookie.Value)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintln(w, user)
+	
+}
+
+
+func (u *Users) DropTable(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
+	err := u.us.DestructiveReset()
+	if err != nil {
+		http.Error(w, "error drop table", 500)
+	}
+	http.Redirect(w, r, "/users", http.StatusFound)
 }
